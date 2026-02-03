@@ -68,3 +68,6 @@ def process_video():
 def make(background_tasks: BackgroundTasks):
     background_tasks.add_task(process_video)
     return {"status": "started"}
+@app.get("/video")
+def get_video():
+    return FileResponse("video.mp4", media_type="video/mp4")
