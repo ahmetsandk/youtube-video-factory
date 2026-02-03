@@ -71,3 +71,11 @@ def make(background_tasks: BackgroundTasks):
 @app.get("/video")
 def get_video():
     return FileResponse("video.mp4", media_type="video/mp4")
+from fastapi.responses import FileResponse
+import os
+
+@app.get("/video")
+def get_video():
+    if os.path.exists("video.mp4"):
+        return FileResponse("video.mp4", media_type="video/mp4")
+    return {"error": "Video not ready yet"}
