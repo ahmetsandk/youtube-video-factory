@@ -1,4 +1,3 @@
-from fastapi.responses import FileResponse
 import os
 import requests
 import subprocess
@@ -11,36 +10,46 @@ PEXELS_KEY = os.getenv("PEXELS_API_KEY")
 
 
 def get_script():
+    print("STEP 1: Generating script...")
     prompt = "Produce a 60 second YouTube script about an interesting fact."
     res = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
     )
-    return res.choices[0].message.content
+    text = res.choices[0].message.content
+    print("Script OK")
+    return text
 
 
 def tts(text):
+    print("STEP 2: Creating TTS...")
     url = "https://api.openai.com/v1/audio/speech"
     headers = {"Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"}
     data = {"model": "gpt-4o-mini-tts", "voice": "alloy", "input": text}
     r = requests.post(url, headers=headers, json=data)
+    print("TTS status:", r.status_code)
     with open("voice.mp3", "wb") as f:
         f.write(r.content)
+    print("voice.mp3 created")
 
 
 def get_image():
+    print("STEP 3: Downloading image...")
     headers = {"Authorization": PEXELS_KEY}
     r = requests.get(
         "https://api.pexels.com/v1/search?query=nature&per_page=1",
         headers=headers,
     )
+    print("Pexels status:", r.status_code)
     img = r.json()["photos"][0]["src"]["original"]
     img_data = requests.get(img).content
     with open("img.jpg", "wb") as f:
         f.write(img_data)
+    print("img.jpg created")
 
 
 def make_video():
+    print("STEP 4: Making video with ffmpeg...")
     cmd = [
         "ffmpeg",
         "-loop", "1",
@@ -55,6 +64,7 @@ def make_video():
         "video.mp4",
     ]
     subprocess.run(cmd)
+    print("video.mp4 created")
 
 
 def process_video():
@@ -68,14 +78,9 @@ def process_video():
 def make(background_tasks: BackgroundTasks):
     background_tasks.add_task(process_video)
     return {"status": "started"}
-@app.get("/video")
-def get_video():
-    return FileResponse("video.mp4", media_type="video/mp4")
-from fastapi.responses import FileResponse
-import os
+
 
 @app.get("/video")
-def get_video():
-    if os.path.exists("video.mp4"):
-        return FileResponse("video.mp4", media_type="video/mp4")
-    return {"error": "Video not ready yet"}
+def video():
+    from fastapi.responses import FileResponse
+    return FileResponse("video.mp4")
