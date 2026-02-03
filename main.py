@@ -28,7 +28,7 @@ def tts(text):
     data = {"model": "gpt-4o-mini-tts", "voice": "alloy", "input": text}
     r = requests.post(url, headers=headers, json=data)
     print("TTS status:", r.status_code)
-    with open("voice.mp3", "wb") as f:
+    with open("/app/voice.mp3", "wb") as f:
         f.write(r.content)
     print("voice.mp3 created")
 
@@ -43,7 +43,7 @@ def get_image():
     print("Pexels status:", r.status_code)
     img = r.json()["photos"][0]["src"]["original"]
     img_data = requests.get(img).content
-    with open("img.jpg", "wb") as f:
+    with open("/app/img.jpg", "wb") as f:
         f.write(img_data)
     print("img.jpg created")
 
@@ -55,15 +55,15 @@ def make_video():
         "ffmpeg",
         "-y",
         "-loop", "1",
-        "-i", "img.jpg",
-        "-i", "voice.mp3",
+        "-i", "/app/img.jpg",
+        "-i", "/app/voice.mp3",
         "-c:v", "libx264",
         "-tune", "stillimage",
         "-c:a", "aac",
         "-b:a", "192k",
         "-pix_fmt", "yuv420p",
         "-shortest",
-        "video.mp4",
+        "/app/video.mp4",
     ]
 
     result = subprocess.run(cmd, capture_output=True, text=True)
