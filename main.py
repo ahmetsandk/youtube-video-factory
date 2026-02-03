@@ -49,9 +49,11 @@ def get_image():
 
 
 def make_video():
-    print("STEP 4: Making video with ffmpeg...")
+    print("FILES:", os.listdir())
+
     cmd = [
         "ffmpeg",
+        "-y",
         "-loop", "1",
         "-i", "img.jpg",
         "-i", "voice.mp3",
@@ -63,8 +65,11 @@ def make_video():
         "-shortest",
         "video.mp4",
     ]
-    subprocess.run(cmd)
-    print("video.mp4 created")
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    print("FFMPEG STDOUT:", result.stdout)
+    print("FFMPEG STDERR:", result.stderr)
 
 
 def process_video():
